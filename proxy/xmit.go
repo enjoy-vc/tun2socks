@@ -26,12 +26,12 @@ func NewXmitProxy(u *url.URL) (*Xmit, error) {
 	password, _ := u.User.Password()
 	log.Infof("user(%v,%v) -> %v", username, password, address)
 	var (
-		ctx        = context.Background()
-		opt        = sdk.XmitSdkOpt{}
-		proxy, err = sdk.NewXmitSdk(ctx, opt)
+		ctx   = context.Background()
+		opt   = sdk.XmitSdkOpt{}
+		proxy = sdk.NewXmitSdk(ctx, opt)
 	)
-	if err != nil {
-		return nil, err
+	if proxy == nil {
+		return nil, fmt.Errorf("new xmit failed")
 	}
 	var (
 		xmit = &Xmit{
@@ -57,7 +57,7 @@ func (b *Xmit) Proto() proto.Proto {
 }
 
 func (b *Xmit) DialContext(ctx context.Context, m *M.Metadata) (net.Conn, error) {
-	return b.proxy.DialTcp(ctx, net.TCPAddr{}, net.TCPAddr{})
+	return b.proxy.DialTcp(ctx, m.Addr())
 }
 
 func (b *Xmit) DialUDP(*M.Metadata) (net.PacketConn, error) {
