@@ -13,7 +13,10 @@ import (
 	"github.com/xjasonlyu/tun2socks/v2/proxy/proto"
 )
 
-var _ Proxy = (*Xmit)(nil)
+var (
+	_      Proxy = (*Xmit)(nil)
+	config []byte
+)
 
 type Xmit struct {
 	ctx   context.Context
@@ -21,13 +24,20 @@ type Xmit struct {
 	proxy *sdk.XmitSdk
 }
 
+func SetXmitDefaultConfig(data []byte) {
+	config = data
+}
+
 func NewXmitProxy(u *url.URL) (*Xmit, error) {
 	address, username := u.Host, u.User.Username()
 	password, _ := u.User.Password()
 	log.Infof("user(%v,%v) -> %v", username, password, address)
+	opt, err := sdk.ParseConfig(config)
+	if err != nil {
+		return nil, err
+	}
 	var (
 		ctx   = context.Background()
-		opt   = sdk.XmitSdkOpt{}
 		proxy = sdk.NewXmitSdk(ctx, opt)
 	)
 	if proxy == nil {
@@ -49,7 +59,7 @@ func NewXmitProxy(u *url.URL) (*Xmit, error) {
 }
 
 func (b *Xmit) Addr() string {
-	return b.addr
+	return b.proxy.String()
 }
 
 func (b *Xmit) Proto() proto.Proto {
