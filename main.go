@@ -61,6 +61,7 @@ func main() {
 	}
 
 	if configUrl != "" {
+		log.Infof("config url: %v", configUrl)
 		if err := queryConfig(configUrl, key); err != nil {
 			log.Fatalf("Failed to read config url '%s': %v", configUrl, err)
 		}
@@ -137,7 +138,6 @@ func queryConfig(baseUrl string, key *engine.Key) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(respon))
-
-	return nil
+	log.Infof("config:\n%v", string(respon))
+	return decodeToml(respon, key)
 }

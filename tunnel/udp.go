@@ -56,6 +56,18 @@ func handleUDPConn(uc adapter.UDPConn) {
 	pipePacket(uc, pc, remote)
 }
 
+func logUdp(metadata *M.Metadata, remote net.PacketConn, closed bool) {
+	if str, ok := remote.(interface{ String() string }); ok {
+		if closed {
+			log.Infof("[UDP] %s <-> %s, %v closed", metadata.SourceAddress(), metadata.DestinationAddress(), str)
+		} else {
+			log.Infof("[UDP] %s <-> %s, %v opened", metadata.SourceAddress(), metadata.DestinationAddress(), str)
+		}
+	} else {
+		log.Infof("[TCP] %s <-> %s", metadata.SourceAddress(), metadata.DestinationAddress())
+	}
+}
+
 func pipePacket(origin, remote net.PacketConn, to net.Addr) {
 	wg := sync.WaitGroup{}
 	wg.Add(2)
@@ -88,7 +100,7 @@ func copyPacketData(dst, src net.PacketConn, to net.Addr, timeout time.Duration)
 			return err
 		}
 
-		if _, err = dst.WriteTo(buf[:n], to); err != nil {
+		if _, err = dst.WriteTo(buf[:n], to); err != nil && err != io.EOF {
 			return err
 		}
 		dst.SetReadDeadline(time.Now().Add(timeout))

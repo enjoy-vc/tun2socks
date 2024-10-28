@@ -38,11 +38,24 @@ func handleTCPConn(originConn adapter.TCPConn) {
 	}
 	metadata.MidIP, metadata.MidPort = parseAddr(remoteConn.LocalAddr())
 
-	remoteConn = statistic.DefaultTCPTracker(remoteConn, metadata)
-	defer remoteConn.Close()
+	remoteWrap := statistic.DefaultTCPTracker(remoteConn, metadata)
+	defer remoteWrap.Close()
 
-	log.Infof("[TCP] %s <-> %s", metadata.SourceAddress(), metadata.DestinationAddress())
-	pipe(originConn, remoteConn)
+	logTcp(metadata, remoteConn, false)
+	pipe(originConn, remoteWrap)
+	logTcp(metadata, remoteConn, true)
+}
+
+func logTcp(metadata *M.Metadata, remote net.Conn, closed bool) {
+	if str, ok := remote.(interface{ String() string }); ok {
+		if closed {
+			log.Infof("[TCP] %s <-> %s, %v closed", metadata.SourceAddress(), metadata.DestinationAddress(), str)
+		} else {
+			log.Infof("[TCP] %s <-> %s, %v opened", metadata.SourceAddress(), metadata.DestinationAddress(), str)
+		}
+	} else {
+		log.Infof("[TCP] %s <-> %s", metadata.SourceAddress(), metadata.DestinationAddress())
+	}
 }
 
 // pipe copies copy data to & from provided net.Conn(s) bidirectionally.

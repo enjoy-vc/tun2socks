@@ -8,6 +8,7 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/adapters/gonet"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 	"gvisor.dev/gvisor/pkg/tcpip/stack"
+	"gvisor.dev/gvisor/pkg/tcpip/transport/icmp"
 	"gvisor.dev/gvisor/pkg/tcpip/transport/tcp"
 	"gvisor.dev/gvisor/pkg/waiter"
 
@@ -76,6 +77,9 @@ func withTCPHandler(handle func(adapter.TCPConn)) option.Option {
 			handle(conn)
 		})
 		s.SetTransportProtocolHandler(tcp.ProtocolNumber, tcpForwarder.HandlePacket)
+		s.SetTransportProtocolHandler(icmp.ProtocolNumber4, func(tei stack.TransportEndpointID, pb *stack.PacketBuffer) bool {
+			return false
+		})
 		return nil
 	}
 }

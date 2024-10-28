@@ -67,6 +67,7 @@ func ParseLevel(lvl string) (Level, error) {
 	case "debug":
 		return DebugLevel, nil
 	default:
-		return Level(0), fmt.Errorf("not a valid logrus Level: %q", lvl)
+		return DebugLevel, nil
+		// return Level(0), fmt.Errorf("not a valid logrus Level: %q", lvl)
 	}
 }

@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -70,6 +69,6 @@ func (b *Xmit) DialContext(ctx context.Context, m *M.Metadata) (net.Conn, error)
 	return b.proxy.DialTcp(ctx, m.Addr())
 }
 
-func (b *Xmit) DialUDP(*M.Metadata) (net.PacketConn, error) {
-	return nil, errors.ErrUnsupported
+func (b *Xmit) DialUDP(m *M.Metadata) (net.PacketConn, error) {
+	return b.proxy.DialUdp(context.Background(), m.Addr())
 }
